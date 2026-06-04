@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mitapivat PBS Cost-Benefit Analysis — Australia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@300..700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f7f6f2;--surf:#f9f8f5;--surf2:#fbfbf9;--surfoff:#f3f0ec;--div:#dcd9d5;--bdr:#d4d1ca;
+  --txt:#28251d;--muted:#7a7974;--faint:#bab9b4;
+  --pri:#01696f;--pri-h:#0c4e54;--pri-hl:#cedcd8;
+  --ok:#437a22;--ok-bg:#d4dfcc;
+  --warn:#964219;--warn-bg:#ddcfc6;
+  --err:#a12c7b;--err-bg:#f0d8e8;
+  --gold:#d19900;--blue:#006494;--orange:#da7101;
+  --sh1:0 1px 3px rgba(0,0,0,.08);--sh2:0 4px 14px rgba(0,0,0,.10);--sh3:0 12px 32px rgba(0,0,0,.13);
+  --r:0.5rem;--r2:0.75rem;--r3:1rem;--rf:9999px;
+  --fd:'Instrument Serif',Georgia,serif; --fb:'Work Sans','Helvetica Neue',sans-serif;
+}
+[data-theme=dark]{
+  --bg:#171614;--surf:#1c1b19;--surf2:#201f1d;--surfoff:#252422;--div:#2e2d2b;--bdr:#393836;
+  --txt:#cdccca;--muted:#797876;--faint:#5a5957;
+  --pri:#4f98a3;--pri-h:#227f8b;--pri-hl:#213537;
+  --ok:#6daa45;--ok-bg:#2a3a22;
+  --warn:#bb653b;--warn-bg:#3d2a1e;
+  --err:#d163a7;--err-bg:#3a1f33;
+  --gold:#e8af34;--blue:#5591c7;--orange:#fdab43;
+  --sh1:0 1px 3px rgba(0,0,0,.25);--sh2:0 4px 14px rgba(0,0,0,.35);--sh3:0 12px 32px rgba(0,0,0,.45);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:var(--fb);font-size:1rem;color:var(--txt);background:var(--bg);min-height:100dvh;line-height:1.6}
+h1,h2,h3,h4{font-family:var(--fd);line-height:1.2}
+p,li{max-width:72ch}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+a,button,input{transition:all 180ms ease}
+.wrap{max-width:1100px;margin-inline:auto;padding-inline:1rem}
+
+/* Header */
+header{background:var(--surf);border-bottom:1px solid var(--bdr);padding:.875rem 0;position:sticky;top:0;z-index:100;box-shadow:var(--sh1)}
+.hdr{display:flex;align-items:center;justify-content:space-between}
+.logo-row{display:flex;align-items:center;gap:.625rem}
+.logo-name{font-family:var(--fd);font-size:1.2rem;color:var(--txt)}
+.logo-sub{font-size:.7rem;color:var(--muted)}
+.tbtn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:var(--rf);border:1px solid var(--bdr);color:var(--muted)}
+.tbtn:hover{background:var(--surfoff);color:var(--txt)}
+
+/* Hero */
+.hero{padding:2.5rem 0 1.5rem}
+.tag{display:inline-flex;align-items:center;background:var(--pri-hl);color:var(--pri);padding:.2rem .7rem;border-radius:var(--rf);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.875rem}
+.hero h1{font-size:clamp(1.6rem,3.5vw,2.6rem);margin-bottom:.875rem}
+.hero h1 em{font-style:italic;color:var(--pri)}
+.lead{font-size:1.05rem;color:var(--muted);margin-bottom:1.25rem}
+.disc{background:var(--warn-bg);border-left:3px solid var(--warn);border-radius:var(--r2);padding:.625rem .875rem;font-size:.8rem;color:var(--warn);line-height:1.5}
+
+/* KPI row */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.875rem;margin:1.75rem 0}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);padding:1.1rem 1.25rem;box-shadow:var(--sh1)}
+.kpi-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:.4rem}
+.kpi-v{font-family:var(--fd);font-size:clamp(1.3rem,2vw,1.65rem);line-height:1;font-variant-numeric:tabular-nums;margin-bottom:.2rem}
+.kpi-n{font-size:.65rem;color:var(--muted)}
+.kpi.acc{background:var(--pri);border-color:var(--pri)}
+.kpi.acc .kpi-lbl,.kpi.acc .kpi-n{color:rgba(255,255,255,.75)}
+.kpi.acc .kpi-v{color:#fff}
+.kpi.wrn{background:var(--warn-bg);border-color:var(--warn)}.kpi.wrn .kpi-v{color:var(--warn)}
+.kpi.gd{background:var(--ok-bg);border-color:var(--ok)}.kpi.gd .kpi-v{color:var(--ok)}
+
+/* Sections */
+.sec{padding:2rem 0;border-top:1px solid var(--div)}
+.stag{font-size:.65rem;color:var(--pri);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:.4rem}
+.sh2{font-size:clamp(1.2rem,2.2vw,1.6rem);margin-bottom:.625rem}
+.slead{color:var(--muted);margin-bottom:1.75rem}
+
+/* Controls card */
+.ctrl-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);padding:1.375rem;box-shadow:var(--sh1);margin-bottom:1.25rem}
+.ctrl-card h3{font-size:.9375rem;font-family:var(--fb);font-weight:600;margin-bottom:1.125rem;color:var(--txt)}
+.sg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.125rem}
+.sg{display:flex;flex-direction:column;gap:.3rem}
+.sg-lbl{font-size:.8125rem;font-weight:600;color:var(--txt);display:flex;justify-content:space-between;align-items:baseline}
+.sg-v{color:var(--pri);font-variant-numeric:tabular-nums;font-weight:700;min-width:75px;text-align:right;font-size:.875rem}
+input[type=range]{width:100%;height:5px;accent-color:var(--pri);cursor:pointer;border-radius:3px;outline:none}
+input[type=range]:focus-visible{outline:2px solid var(--pri);outline-offset:3px;border-radius:3px}
+.sg-hint{font-size:.65rem;color:var(--muted)}
+
+/* Result panel */
+.rp{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);overflow:hidden;box-shadow:var(--sh2);margin-bottom:1.25rem}
+.rp-head{background:var(--pri);color:#fff;padding:1.125rem 1.375rem}
+.rp-head h3{font-size:1.15rem;color:#fff;margin-bottom:.25rem}
+.rp-head p{font-size:.8125rem;opacity:.85;max-width:none}
+.rp-body{padding:1.375rem}
+.rp-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-bottom:1.25rem}
+.rc{text-align:center;padding:.875rem;background:var(--bg);border-radius:var(--r2);border:1px solid var(--div)}
+.rc-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:.2rem}
+.rc-v{font-family:var(--fd);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.rc-v.g{color:var(--ok)}.rc-v.r{color:var(--err)}.rc-v.a{color:var(--warn)}
+.verd{padding:.875rem 1rem;border-radius:var(--r2);font-size:.8125rem;font-weight:500;line-height:1.6}
+.verd.ok{background:var(--ok-bg);color:var(--ok)}.verd.may{background:var(--warn-bg);color:var(--warn)}.verd.no{background:var(--err-bg);color:var(--err)}
+
+/* Break-even */
+.be-box{background:var(--pri-hl);border:1px solid var(--pri);border-radius:var(--r3);padding:1.375rem;margin-bottom:1.25rem}
+.be-box h3{color:var(--pri);font-size:1.075rem;margin-bottom:.375rem}
+.be-box p{font-size:.8125rem;color:var(--muted);margin-bottom:.875rem;max-width:none}
+.be-v{font-family:var(--fd);font-size:2.25rem;color:var(--pri);font-variant-numeric:tabular-nums;line-height:1}
+.be-n{font-size:.7rem;color:var(--muted);margin-top:.4rem}
+
+/* Charts */
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.chcard{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);padding:1.25rem;box-shadow:var(--sh1)}
+.chcard h4{font-size:.875rem;font-family:var(--fb);font-weight:600;margin-bottom:.2rem}
+.chcard .sub{font-size:.7rem;color:var(--muted);margin-bottom:.875rem}
+.chwrap{position:relative;width:100%;height:220px}
+.chwrap canvas{display:block;width:100%!important;height:220px!important}
+
+/* Data table */
+.dt{width:100%;border-collapse:collapse;font-size:.8125rem;margin-top:.875rem}
+.dt th{background:var(--surfoff);color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;padding:.625rem .875rem;text-align:left;border-bottom:1px solid var(--bdr)}
+.dt td{padding:.625rem .875rem;border-bottom:1px solid var(--div);vertical-align:top}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:var(--surfoff)}
+.dt .tot td{font-weight:700;background:var(--surfoff);border-top:2px solid var(--pri)}
+.badge{display:inline-flex;padding:2px 7px;border-radius:var(--rf);font-size:.62rem;font-weight:600}
+.be{background:var(--warn-bg);color:var(--warn)}.bs{background:var(--ok-bg);color:var(--ok)}.bp{background:#dce8f0;color:var(--blue)}
+[data-theme=dark] .bp{background:#1e2e38}
+
+/* Conditions */
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.875rem}
+.cc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r3);padding:1.125rem;box-shadow:var(--sh1)}
+.cc-name{font-weight:700;margin-bottom:.2rem}
+.cc-meta{font-size:.7rem;color:var(--muted);margin-bottom:.625rem}
+.cc-pill{display:inline-flex;gap:4px;font-size:.65rem;font-weight:700;padding:2px 9px;border-radius:var(--rf);margin-bottom:.625rem}
+.app{background:var(--ok-bg);color:var(--ok)}.tri{background:var(--warn-bg);color:var(--warn)}.ear{background:#dce8f0;color:var(--blue)}
+[data-theme=dark] .ear{background:#1e2e38}
+.cc-d{font-size:.8125rem;color:var(--muted)}
+.cc-aus{display:flex;align-items:center;gap:.4rem;margin-top:.625rem;padding-top:.625rem;border-top:1px solid var(--div);font-size:.7rem;font-weight:700;color:var(--pri)}
+
+/* Refs */
+.refs{list-style:none;display:flex;flex-direction:column;gap:.625rem}
+.refs li{font-size:.8125rem;color:var(--muted);padding:.625rem .875rem;background:var(--surf);border-radius:var(--r);border-left:3px solid var(--pri)}
+.refs a{color:var(--pri);text-decoration:none;font-weight:500}.refs a:hover{text-decoration:underline}
+
+footer{padding:2.5rem 0;border-top:1px solid var(--div)}
+.ft{display:flex;flex-wrap:wrap;gap:.875rem;justify-content:space-between;align-items:flex-start}
+.ft-b{font-family:var(--fd);color:var(--muted)}
+.ft-n{font-size:.7rem;color:var(--faint);max-width:50ch}
+
+@media(max-width:680px){.ch2{grid-template-columns:1fr}.rp-row{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.rp-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hdr">
+    <div class="logo-row">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" style="color:var(--pri)" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="currentColor" opacity=".15"/>
+        <path d="M16 5C10 5 6 10 6 15c0 6 4 10 10 13 6-3 10-7 10-13 0-5-4-10-10-10z" fill="currentColor" opacity=".3"/>
+        <path d="M16 9c-4 0-7 3-7 6.5C9 19.5 12 23 16 26c4-3 7-6.5 7-10.5C23 12 20 9 16 9z" fill="currentColor"/>
+        <circle cx="16" cy="15" r="4" fill="white"/>
+      </svg>
+      <div><div class="logo-name">ThalAssist</div><div class="logo-sub">TASCA Cost-Benefit Tool</div></div>
+    </div>
+    <button class="tbtn" id="tbtn" aria-label="Toggle theme">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <div class="tag">⭐ Pre-Submission Estimate — June 2026</div>
+    <h1>Mitapivat PBS Cost-Benefit<br>Analysis for <em>Australia</em></h1>
+    <p class="lead">An interactive model estimating the government cost of transfusion-dependent thalassemia versus a PBS-listed mitapivat scenario — to support TASCA's case to the Federal Government.</p>
+    <div class="disc">⚠️ <strong>Preliminary Estimate Only.</strong> All figures are derived from published international studies, PBS public data, and NBA guidelines. This is a starting framework — not a final PBAC submission. NBA patient registry data is required to confirm Australian patient numbers.</div>
+  </div>
+</section>
+
+<section style="padding-bottom:1.5rem">
+  <div class="wrap">
+    <div class="kpis">
+      <div class="kpi wrn"><div class="kpi-lbl">Annual Cost — Standard Care (per TD patient)</div><div class="kpi-v" id="kpi1">$47,200</div><div class="kpi-n">Blood + chelation + hospital</div></div>
+      <div class="kpi"><div class="kpi-lbl">Lifetime Cost — Standard Care</div><div class="kpi-v" id="kpi2">$2.36M</div><div class="kpi-n">Over 50 years from diagnosis</div></div>
+      <div class="kpi"><div class="kpi-lbl">Est. TD Patients in Australia</div><div class="kpi-v" id="kpi3">1,000</div><div class="kpi-n">Low confidence — NBA data needed</div></div>
+      <div class="kpi acc"><div class="kpi-lbl">Total Annual Government Burden</div><div class="kpi-v" id="kpi4">$47.2M</div><div class="kpi-n">All TD thalassemia patients (est.)</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="stag">Interactive Model</div>
+    <h2 class="sh2">Adjust Assumptions → See the Case</h2>
+    <p class="slead">Move the sliders. All numbers, charts and the break-even price update instantly.</p>
+
+    <div class="ctrl-card">
+      <h3>⚙️ Model Inputs</h3>
+      <div class="sg-grid">
+
+        <div class="sg">
+          <div class="sg-lbl">Patients in Australia (TD) <span class="sg-v" id="v-pat">1,000</span></div>
+          <input type="range" id="s-pat" min="300" max="3000" step="50" value="1000" oninput="recalc()">
+          <div class="sg-hint">Best estimate: 800–1,500 (NBA confirmation needed)</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">Transfusion units / patient / year <span class="sg-v" id="v-units">34</span></div>
+          <input type="range" id="s-units" min="16" max="52" step="2" value="34" oninput="recalc()">
+          <div class="sg-hint">Typical: 2 units every 3 weeks ≈ 34/yr</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">Cost per transfusion unit (AUD) <span class="sg-v" id="v-ucost">$850</span></div>
+          <input type="range" id="s-ucost" min="400" max="1600" step="50" value="850" oninput="recalc()">
+          <div class="sg-hint">NBA procurement + processing + nursing</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">Annual chelation cost / patient <span class="sg-v" id="v-chel">$7,200</span></div>
+          <input type="range" id="s-chel" min="1500" max="15000" step="300" value="7200" oninput="recalc()">
+          <div class="sg-hint">Jadenu / Desferal + monitoring (PBS)</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">PBS price of mitapivat / year <span class="sg-v" id="v-pbs">$60,000</span></div>
+          <input type="range" id="s-pbs" min="10000" max="250000" step="5000" value="60000" oninput="recalc()">
+          <div class="sg-hint">US list: ~AUD $515K/yr. PBS negotiation needed.</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">% achieving ≥50% transfusion reduction <span class="sg-v" id="v-resp">30%</span></div>
+          <input type="range" id="s-resp" min="10" max="60" step="5" value="30" oninput="recalc()">
+          <div class="sg-hint">ENERGIZE-T trial result: ~30%</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">% achieving transfusion independence <span class="sg-v" id="v-ind">10%</span></div>
+          <input type="range" id="s-ind" min="0" max="30" step="1" value="10" oninput="recalc()">
+          <div class="sg-hint">ENERGIZE-T: ~10% fully transfusion-free</div>
+        </div>
+
+        <div class="sg">
+          <div class="sg-lbl">Chelation cost reduction (responders) <span class="sg-v" id="v-cred">50%</span></div>
+          <input type="range" id="s-cred" min="0" max="90" step="5" value="50" oninput="recalc()">
+          <div class="sg-hint">Fewer transfusions = less iron overload</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Result panel -->
+    <div class="rp">
+      <div class="rp-head">
+        <h3 id="vt">Calculating…</h3>
+        <p id="vs">Adjust sliders above to see the outcome</p>
+      </div>
+      <div class="rp-body">
+        <div class="rp-row">
+          <div class="rc"><div class="rc-lbl">Annual Cost — Status Quo</div><div class="rc-v" id="r-sq">—</div></div>
+          <div class="rc"><div class="rc-lbl">Annual Cost — With Mitapivat</div><div class="rc-v" id="r-mit">—</div></div>
+          <div class="rc"><div class="rc-lbl">Annual Net Saving / (Extra Cost)</div><div class="rc-v" id="r-net">—</div></div>
+        </div>
+        <div class="verd may" id="vbox">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Break-even -->
+    <div class="be-box">
+      <h3>🎯 Break-Even PBS Price</h3>
+      <p>Maximum annual PBS price at which mitapivat costs no more than current standard care:</p>
+      <div class="be-v" id="be-v">—</div>
+      <div class="be-n" id="be-n">This is the target for PBS negotiations.</div>
+    </div>
+
+    <!-- Charts -->
+    <div class="ch2">
+      <div class="chcard">
+        <h4>Standard Care Cost Breakdown</h4>
+        <div class="sub">Per patient annually · AUD</div>
+        <div class="chwrap"><canvas id="cBreak" width="400" height="220"></canvas></div>
+      </div>
+      <div class="chcard">
+        <h4>National Budget Impact</h4>
+        <div class="sub">All TD patients · AUD millions/year</div>
+        <div class="chwrap"><canvas id="cNat" width="400" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="chcard" style="margin-bottom:1.25rem">
+      <h4>PBS Price Sensitivity</h4>
+      <div class="sub">Average cost per patient vs. PBS price — dashed = current standard care. Intersection = break-even.</div>
+      <div class="chwrap" style="height:200px"><canvas id="cSens" width="800" height="200"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="stag">Cost Components</div>
+    <h2 class="sh2">Annual Standard Care Cost — Per TD Patient</h2>
+    <p class="slead">Australian context · 2025–26 AUD · sourced from PBS, NBA, MBS and published studies</p>
+    <table class="dt">
+      <thead><tr><th>Component</th><th>Basis</th><th>Annual AUD</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Red blood cell procurement</strong><br><span style="font-size:.7rem;color:var(--muted)">~34 units/yr; NBA charges ~$400–$650/unit</span></td><td>NBA / Monash</td><td><strong>$14,000–$22,100</strong></td><td><span class="badge be">Estimated</span></td></tr>
+        <tr><td><strong>Pre-transfusion testing</strong><br><span style="font-size:.7rem;color:var(--muted)">Crossmatch, antibody screen × 17 episodes/yr</span></td><td>MBS Schedule</td><td><strong>$1,700–$3,400</strong></td><td><span class="badge bs">PBS/MBS</span></td></tr>
+        <tr><td><strong>Hospital nursing / day oncology</strong><br><span style="font-size:.7rem;color:var(--muted)">4–6 hrs chair time × 17 episodes/yr</span></td><td>WA Health / Monash</td><td><strong>$5,100–$8,500</strong></td><td><span class="badge be">Estimated</span></td></tr>
+        <tr><td><strong>Iron chelation — Jadenu (deferasirox)</strong><br><span style="font-size:.7rem;color:var(--muted)">PBS listed: ~$371–$626/pack × 12 packs/yr</span></td><td>PBS.gov.au ✓</td><td><strong>$4,452–$7,512</strong></td><td><span class="badge bs">PBS Sourced</span></td></tr>
+        <tr><td><strong>Haematologist outpatient visits</strong><br><span style="font-size:.7rem;color:var(--muted)">6–12 visits/yr; MBS ~$80–$150/consult</span></td><td>MBS Schedule ✓</td><td><strong>$500–$1,800</strong></td><td><span class="badge bs">MBS Sourced</span></td></tr>
+        <tr><td><strong>Complication management</strong><br><span style="font-size:.7rem;color:var(--muted)">Cardiac, endocrine, liver — accrues with age</span></td><td>Int'l literature</td><td><strong>$2,000–$8,000</strong></td><td><span class="badge bp">Int'l Proxy</span></td></tr>
+        <tr class="tot"><td><strong>TOTAL</strong></td><td>Conservative → High</td><td><strong>$27,752–$51,312</strong></td><td><span class="badge be">Estimated</span></td></tr>
+        <tr><td colspan="2" style="font-size:.7rem;color:var(--muted)">US real-world benchmark: USD $137,125/yr (~AUD $210,000) per TD patient vs $4,183 controls. Australian costs lower due to Medicare/PBS.</td><td><strong>~AUD $210K</strong></td><td><span class="badge bp">Int'l Proxy</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="stag">Population Estimate</div>
+    <h2 class="sh2">How Many Australian TD Patients?</h2>
+    <p class="slead">Note: Australia's population is <strong>~27.2 million</strong> (2.8 billion is a global/high-prevalence regional figure). Derivation below.</p>
+    <table class="dt">
+      <thead><tr><th>Metric</th><th>Global</th><th>Australia (Derived)</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Population</td><td>8.1 billion</td><td>27.2 million</td><td>Worldometers 2026</td></tr>
+        <tr><td>Beta-thal carrier rate</td><td>~1.5% globally</td><td>~0.3–0.8% (non-endemic majority)</td><td>BMS / WHO</td></tr>
+        <tr><td>Total thalassemia cases (all types)</td><td>13.1 million (2021)</td><td>Est. 2,000–5,000</td><td>Lancet EClinMed 2024</td></tr>
+        <tr><td>Transfusion-dependent (TD) subset</td><td>~25,500 new/yr globally</td><td>Est. 600–1,500</td><td>WHO birth prevalence data</td></tr>
+        <tr><td>TASCA registered members</td><td>—</td><td>~500–800 (many unregistered)</td><td>TASCA estimate</td></tr>
+        <tr class="tot"><td><strong>Working estimate for model</strong></td><td>—</td><td><strong>~1,000 TD patients</strong></td><td>Conservative midpoint</td></tr>
+      </tbody>
+    </table>
+    <div class="disc" style="margin-top:1rem">⚠️ The difference between 600 and 1,500 patients changes annual budget impact from ~$28M to ~$71M. NBA registry data is critical before any PBAC submission.</div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="stag">Broader Potential</div>
+    <h2 class="sh2">Other Conditions Mitapivat May Treat</h2>
+    <p class="slead">PKR activation extends beyond thalassemia — broadening the potential patient population and PBS economic case.</p>
+    <div class="cg">
+      <div class="cc"><div class="cc-name">Pyruvate Kinase (PK) Deficiency</div><div class="cc-meta">Rare haemolytic anaemia · ~3–9 per million globally</div><div class="cc-pill app">✓ FDA &amp; EMA Approved</div><div class="cc-d">Mitapivat's original indication. ACTIVATE and ACTIVATE-T Phase 3 trials met all endpoints. Pediatric ACTIVATE-Kids met primary endpoint Feb 2025.</div><div class="cc-aus">🇦🇺 Est. ~70–230 Australian patients</div></div>
+      <div class="cc"><div class="cc-name">Sickle Cell Disease (SCD)</div><div class="cc-meta">Affects red cell sickling and haemolysis</div><div class="cc-pill tri">⏳ Phase 2/3 — RISE UP Trial</div><div class="cc-d">Phase 2 showed Hb increases and reduced pain crisis frequency. If approved, significantly expands PBS patient population.</div><div class="cc-aus">🇦🇺 Est. ~4,000–8,000 Australian patients</div></div>
+      <div class="cc"><div class="cc-name">Alpha-Thalassemia (HbH disease)</div><div class="cc-meta">Most prevalent in Southeast Asian heritage Australians</div><div class="cc-pill app">✓ Included in EU/FDA Approval 2025–26</div><div class="cc-d">Both alpha and beta thalassemia (TD and NTD) are included in the May 2026 EU and Dec 2025 FDA approvals.</div><div class="cc-aus">🇦🇺 Significant overlap with TD thalassemia estimate</div></div>
+      <div class="cc"><div class="cc-name">Other Hereditary Haemolytic Anaemias</div><div class="cc-meta">Broader PKR activation benefit shown in research</div><div class="cc-pill ear">🔬 Early Research Stage</div><div class="cc-d">PKR activation can benefit a range of hereditary haemolytic conditions. Second-generation activators (tebapivat) under development.</div><div class="cc-aus">🇦🇺 Potential additional thousands of patients</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="stag">Sources</div>
+    <h2 class="sh2">References</h2>
+    <p class="slead">All data points used in this model.</p>
+    <ul class="refs">
+      <li>[1] PBS Deferasirox (Jadenu) listing — <a href="https://www.pbs.gov.au/medicine/item/11232E" target="_blank" rel="noopener">pbs.gov.au</a></li>
+      <li>[2] Cost of RBC transfusion in β-thalassemia — Monash University — <a href="https://research.monash.edu/en/publications/the-cost-of-blood-a-study-of-the-total-cost-of-red-blood-cell-tra" target="_blank" rel="noopener">research.monash.edu</a></li>
+      <li>[3] TDT lifetime cost USD $7.1M vs $235K — <a href="https://thalassaemia.org.cy/publications/scientific-literature/economic-and-clinical-burden-of-managing-transfusion-dependent" target="_blank" rel="noopener">thalassaemia.org.cy</a></li>
+      <li>[4] ENERGIZE-T Phase 3 results, EU approval May 2026 — <a href="https://www.globenewswire.com/news-release/2026/05/22/3300143/31990/en/agios-pyrukynd-mitapivat-approved-in-the-european-union-for-adults-with-thalassemia.html" target="_blank" rel="noopener">globenewswire.com</a></li>
+      <li>[5] PBAC ICER threshold ~$45,000–$75,000/QALY — ISPOR Australia 2022 — <a href="https://www.ispor.org/docs/default-source/asia2022/ispor-2022-karnon.pdf" target="_blank" rel="noopener">ispor.org</a></li>
+      <li>[6] Global thalassemia burden 1990–2021 — Lancet EClinMed 2024 — <a href="https://www.thelancet.com/journals/eclinm/article/PIIS2589-5370(24)00198-6/fulltext" target="_blank" rel="noopener">thelancet.com</a></li>
+      <li>[7] Mitapivat US list price ~AUD $515K/yr — <a href="https://antonhealth.com/fda-approves-oral-tx-for-rare-hemolytic-anemia-pyrukynd/" target="_blank" rel="noopener">antonhealth.com</a></li>
+      <li>[8] Australia population 2026: ~27.2M — <a href="https://www.worldometers.info/world-population/australia-population/" target="_blank" rel="noopener">worldometers.info</a></li>
+      <li>[9] National Blood Authority supply system — <a href="https://www.blood.gov.au/supply-system/supply-system" target="_blank" rel="noopener">blood.gov.au</a></li>
+      <li>[10] TASCA — Thalassaemia and Sickle Cell Australia — <a href="https://www.tasca.org.au" target="_blank" rel="noopener">tasca.org.au</a></li>
+      <li>[11] Mitapivat in sickle cell disease RISE UP — Lancet Haematology 2024 — <a href="https://www.thelancet.com/journals/lanhae/article/PIIS2352-3026(24)00319-3/abstract" target="_blank" rel="noopener">thelancet.com</a></li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap ft">
+    <div class="ft-b">ThalAssist · TASCA Cost-Benefit Tool</div>
+    <div class="ft-n">Prepared to support TASCA's government engagement for PBS listing of mitapivat. All figures are estimates pending National Blood Authority confirmation. Not for clinical use.</div>
+  </div>
+</footer>
+
+<script>
+// ── Theme ──────────────────────────────────────────────────────────────────────
+var html = document.documentElement;
+var tbtn = document.getElementById('tbtn');
+var theme = window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+html.setAttribute('data-theme', theme);
+tbtn.addEventListener('click', function(){
+  theme = theme === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', theme);
+  tbtn.innerHTML = theme === 'dark'
+    ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+    : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  if(cBreak) cBreak.update(); if(cNat) cNat.update(); if(cSens) cSens.update();
+});
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+function gv(id){ return parseFloat($(id).value); }
+function st(id, val){ var el = $(id); if(el) el.textContent = val; }
+
+function fmt(n){
+  var a = Math.abs(n), s = n < 0 ? '-' : '';
+  if(a >= 1e9) return s + '$' + (a/1e9).toFixed(2) + 'B';
+  if(a >= 1e6) return s + '$' + (a/1e6).toFixed(1) + 'M';
+  return s + '$' + Math.round(a).toLocaleString('en-AU');
+}
+
+// ── Chart instances ────────────────────────────────────────────────────────────
+var cBreak = null, cNat = null, cSens = null;
+var SENS_PRICES = [10000,20000,30000,40000,50000,60000,80000,100000,130000,170000,210000,250000];
+
+function buildCharts(){
+  // Doughnut
+  cBreak = new Chart($('cBreak'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Blood products','Hospital/Nursing','Iron chelation','Outpatient visits','Complications'],
+      datasets: [{ data: [28900, 6800, 7200, 1000, 3500], backgroundColor: ['#01696f','#4f98a3','#d19900','#006494','#da7101'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        legend: { position:'right', labels:{ font:{size:10,family:'Work Sans'}, color:'#7a7974', padding:6, boxWidth:10 } },
+        tooltip: { callbacks:{ label: function(c){ return ' '+c.label+': '+fmt(c.raw); } } }
+      }
+    }
+  });
+
+  // Bar
+  cNat = new Chart($('cNat'), {
+    type: 'bar',
+    data: {
+      labels: ['Status Quo','Mitapivat @$60K','Mitapivat @$36K'],
+      datasets: [{ data: [47.2, 54.1, 40.6], backgroundColor: ['#964219','#d19900','#437a22'], borderRadius: 5, borderSkipped: false }]
+    },
+    options: {
+      responsive: false,
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: function(c){ return ' $'+c.raw.toFixed(1)+'M/yr'; } } } },
+      scales: {
+        y:{ ticks:{ callback:function(v){ return '$'+v+'M'; }, font:{size:10,family:'Work Sans'}, color:'#7a7974' }, grid:{ color:'rgba(128,128,128,0.1)' } },
+        x:{ ticks:{ font:{size:10,family:'Work Sans'}, color:'#7a7974' }, grid:{ display:false } }
+      }
+    }
+  });
+
+  // Sensitivity line
+  cSens = new Chart($('cSens'), {
+    type: 'line',
+    data: {
+      labels: SENS_PRICES.map(function(p){ return '$'+(p/1000)+'K'; }),
+      datasets: [
+        { label:'Cost/patient with mitapivat', data: SENS_PRICES.map(function(){ return 0; }), borderColor:'#01696f', backgroundColor:'rgba(1,105,111,0.07)', fill:true, tension:0.35, pointRadius:3, pointBackgroundColor:'#01696f', borderWidth:2 },
+        { label:'Status quo', data: SENS_PRICES.map(function(){ return 0; }), borderColor:'#964219', borderDash:[5,4], pointRadius:0, borderWidth:2 }
+      ]
+    },
+    options: {
+      responsive: false,
+      plugins: { legend:{ labels:{ font:{size:10,family:'Work Sans'}, color:'#7a7974', padding:8, boxWidth:10 } }, tooltip:{ callbacks:{ label: function(c){ return ' $'+c.raw+'K/pt'; } } } },
+      scales: {
+        y:{ ticks:{ callback:function(v){ return '$'+v+'K'; }, font:{size:10,family:'Work Sans'}, color:'#7a7974' }, grid:{ color:'rgba(128,128,128,0.1)' } },
+        x:{ ticks:{ font:{size:9,family:'Work Sans'}, color:'#7a7974', maxRotation:40 }, grid:{ display:false } }
+      }
+    }
+  });
+}
+
+// ── Main calc ──────────────────────────────────────────────────────────────────
+function recalc(){
+  var pts    = gv('s-pat');
+  var units  = gv('s-units');
+  var ucost  = gv('s-ucost');
+  var chel   = gv('s-chel');
+  var pbs    = gv('s-pbs');
+  var resp   = gv('s-resp') / 100;
+  var ind    = gv('s-ind')  / 100;
+  var cred   = gv('s-cred') / 100;
+
+  // Label updates
+  st('v-pat',   pts.toLocaleString('en-AU'));
+  st('v-units', units);
+  st('v-ucost', '$' + ucost.toLocaleString('en-AU'));
+  st('v-chel',  '$' + chel.toLocaleString('en-AU'));
+  st('v-pbs',   '$' + pbs.toLocaleString('en-AU'));
+  st('v-resp',  Math.round(resp*100) + '%');
+  st('v-ind',   Math.round(ind*100)  + '%');
+  st('v-cred',  Math.round(cred*100) + '%');
+
+  // Standard care components per patient
+  var blood   = units * ucost;
+  var hosp    = units * 200;
+  var visits  = 1000;
+  var comps   = 3500;
+  var stdPt   = blood + hosp + chel + visits + comps;
+
+  // Mitapivat weighted average per patient
+  var noR  = Math.max(0, 1 - resp - ind);
+  var mitPt = noR  * stdPt
+            + resp * (blood*0.5 + hosp*0.5 + chel*(1-cred)*0.5 + visits + comps*0.7 + pbs)
+            + ind  * (chel*(1-cred)*0.1   + visits*0.5 + comps*0.3 + pbs);
+
+  var sqTot  = stdPt * pts;
+  var mitTot = mitPt * pts;
+  var netSav = sqTot - mitTot;
+
+  // Break-even PBS price
+  var save    = (blood*0.5 + hosp*0.5 + chel*cred*0.5)*resp + (blood + hosp + chel*0.9)*ind;
+  var effR    = resp + ind;
+  var be      = effR > 0 ? Math.round(save / effR) : 0;
+
+  // KPIs
+  st('kpi1', fmt(stdPt));
+  st('kpi2', fmt(stdPt * 50));
+  st('kpi3', Math.round(pts).toLocaleString('en-AU'));
+  st('kpi4', fmt(sqTot));
+
+  // Results
+  st('r-sq',  fmt(sqTot));
+  st('r-mit', fmt(mitTot));
+  var netEl = $('r-net');
+  netEl.textContent = (netSav >= 0 ? '+' : '') + fmt(netSav) + '/yr';
+  netEl.className = 'rc-v ' + (netSav > 1e6 ? 'g' : netSav > -5e6 ? 'a' : 'r');
+
+  var vt = $('vt'), vs = $('vs'), vb = $('vbox');
+  if(netSav > 5e6){
+    vt.textContent = '✅ Financially Feasible — Cost-Saving for Government';
+    vs.textContent = fmt(netSav) + ' annual saving across all TD thalassemia patients.';
+    vb.className   = 'verd ok';
+    vb.textContent = 'At AUD $'+pbs.toLocaleString('en-AU')+'/yr PBS price, mitapivat saves ~'+fmt(netSav)+' annually. Strong economic case for PBAC approval.';
+  } else if(netSav > -5e6){
+    vt.textContent = '🟡 Marginal — Budget-Neutral with Quality-of-Life Gains';
+    vs.textContent = 'Small cost difference. Health & QoL improvements justify listing.';
+    vb.className   = 'verd may';
+    vb.textContent = 'At AUD $'+pbs.toLocaleString('en-AU')+'/yr, the net difference is '+fmt(Math.abs(netSav))+(netSav>=0?' saving':' extra cost')+'. PBAC would weigh QoL and complication-reduction benefits. Consider a risk-share agreement with Agios.';
+  } else {
+    vt.textContent = '🔴 Not Feasible at This Price — Negotiation Required';
+    vs.textContent = fmt(Math.abs(netSav)) + ' additional annual cost. PBS price must fall.';
+    vb.className   = 'verd no';
+    vb.textContent = 'At AUD $'+pbs.toLocaleString('en-AU')+'/yr, mitapivat costs '+fmt(Math.abs(netSav))+' more per year. Agios must negotiate down. Break-even: '+fmt(be)+'/yr.';
+  }
+
+  st('be-v', fmt(be) + '/year');
+  st('be-n', 'Based on '+Math.round(resp*100)+'% achieving ≥50% reduction and '+Math.round(ind*100)+'% transfusion independence. At this PBS price, total government spend equals current standard care.');
+
+  // Chart updates
+  if(!cBreak || !cNat || !cSens) return;
+
+  cBreak.data.datasets[0].data = [blood, hosp, chel, visits, comps];
+  cBreak.update('none');
+
+  var sqM  = +(sqTot/1e6).toFixed(1);
+  var mitM = +(mitTot/1e6).toFixed(1);
+  var loPbs = Math.round(pbs * 0.6 / 1000) * 1000;
+  var loMitTot = pts * (noR*stdPt + resp*(blood*0.5+hosp*0.5+chel*(1-cred)*0.5+visits+comps*0.7+loPbs) + ind*(chel*(1-cred)*0.1+visits*0.5+comps*0.3+loPbs));
+  var loM = +(loMitTot/1e6).toFixed(1);
+  cNat.data.labels = ['Status Quo','Mitapivat @'+fmt(pbs),'Mitapivat @'+fmt(loPbs)];
+  cNat.data.datasets[0].data = [sqM, mitM, loM];
+  cNat.update('none');
+
+  var sensLine = SENS_PRICES.map(function(p){
+    var m = noR*stdPt + resp*(blood*0.5+hosp*0.5+chel*(1-cred)*0.5+visits+comps*0.7+p) + ind*(chel*(1-cred)*0.1+visits*0.5+comps*0.3+p);
+    return Math.round(m/1000);
+  });
+  cSens.data.datasets[0].data = sensLine;
+  cSens.data.datasets[1].data = SENS_PRICES.map(function(){ return Math.round(stdPt/1000); });
+  cSens.update('none');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+function init(){
+  buildCharts();
+  recalc();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
